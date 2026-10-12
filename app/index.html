@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7f8">
+    <meta
+      name="description"
+      content="A clear, contributor-friendly overview of project status, ownership, and recent activity."
+    >
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div class="dashboard-header__eyebrow">
+          <span class="dashboard-header__mark" aria-hidden="true">P</span>
+          <span>Team overview</span>
+        </div>
+        <h1 class="dashboard-title">Project Pulse</h1>
+        <p class="dashboard-description">
+          A quick read on what’s moving, who’s leading, and where a helping hand could make a difference.
+        </p>
+      </header>
+
+      <section class="dashboard-content" aria-label="Project overview">
+        <div
+          class="dashboard-state dashboard-state--loading"
+          id="dashboard-state"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="dashboard-state__indicator" aria-hidden="true"></span>
+          <span class="dashboard-state__message">Loading project updates…</span>
+        </div>
+        <div class="project-grid" id="project-grid" aria-label="Projects" hidden></div>
+      </section>
+
+      <footer class="dashboard-footer">
+        <span class="dashboard-footer__dot" aria-hidden="true"></span>
+        Sample project updates for illustration
+      </footer>
+    </main>
+
+    <script>
+      (() => {
+        const stateContainer = document.getElementById("dashboard-state");
+        const projectGrid = document.getElementById("project-grid");
+        const knownStatuses = new Set(["active", "at-risk", "blocked", "complete"]);
+        const knownPriorities = new Set(["high", "medium", "low"]);
+
+        function showState(modifier, message, heading) {
+          stateContainer.className = `dashboard-state dashboard-state--${modifier}`;
+          stateContainer.replaceChildren();
+
+          const title = document.createElement("strong");
+          title.className = "dashboard-state__title";
+          title.textContent = heading;
+          const description = document.createElement("span");
+          description.className = "dashboard-state__message";
+          description.textContent = message;
+          stateContainer.append(title, description);
+          stateContainer.hidden = false;
+          projectGrid.hidden = true;
+        }
+
+        function createBadge(type, value, knownValues) {
+          const badge = document.createElement("span");
+          const normalizedValue = value.trim().toLowerCase().replace(/\s+/g, "-");
+          const modifier = knownValues.has(normalizedValue) ? ` ${type}--${normalizedValue}` : "";
+          badge.className = `${type}${modifier}`;
+          badge.textContent = value;
+          return badge;
+        }
+
+        function createField(className, label, value) {
+          const element = document.createElement("p");
+          element.className = className;
+          if (label) {
+            const labelElement = document.createElement("span");
+            labelElement.className = "visually-hidden";
+            labelElement.textContent = `${label}: `;
+            element.append(labelElement);
+          }
+          element.append(document.createTextNode(value));
+          return element;
+        }
+
+        function createProjectCard(project) {
+          const card = document.createElement("article");
+          card.className = "project-card";
+
+          const header = document.createElement("div");
+          header.className = "project-card__header";
+          const title = document.createElement("h2");
+          title.className = "project-card__title";
+          title.textContent = project.name;
+          const owner = document.createElement("p");
+          owner.className = "project-card__owner";
+          const ownerLabel = document.createElement("span");
+          ownerLabel.className = "visually-hidden";
+          ownerLabel.textContent = "Owner: ";
+          const ownerInitial = document.createElement("span");
+          ownerInitial.className = "project-card__owner-mark";
+          ownerInitial.setAttribute("aria-hidden", "true");
+          ownerInitial.textContent = project.owner.trim().charAt(0).toUpperCase();
+          owner.append(ownerInitial, ownerLabel, document.createTextNode(project.owner));
+          header.append(title, owner);
+
+          const badges = document.createElement("div");
+          badges.className = "project-card__badges";
+          badges.append(
+            createBadge("status-badge", project.status, knownStatuses),
+            createBadge("priority-badge", project.priority, knownPriorities)
+          );
+
+          card.append(
+            header,
+            badges,
+            createField("project-card__summary", "Summary", project.summary),
+            createField("project-card__activity", "Recent activity", project.recentActivity)
+          );
+          return card;
+        }
+
+        function isValidProject(project) {
+          return project !== null
+            && typeof project === "object"
+            && ["name", "owner", "status", "recentActivity", "priority", "summary"]
+              .every((key) => typeof project[key] === "string" && project[key].trim().length > 0);
+        }
+
+        async function loadProjects() {
+          try {
+            const response = await fetch("project-data.json", { cache: "no-store" });
+            if (!response.ok) {
+              throw new Error(`The project data request failed (${response.status}).`);
+            }
+
+            let data;
+            try {
+              data = await response.json();
+            } catch {
+              throw new Error("The project data file is not valid JSON.");
+            }
+
+            if (data === null || typeof data !== "object" || !Array.isArray(data.projects)) {
+              throw new Error("The project data must contain a projects array.");
+            }
+            if (!data.projects.every(isValidProject)) {
+              throw new Error("One or more project records are missing valid required fields.");
+            }
+
+            if (data.projects.length === 0) {
+              showState("empty", "There are no projects to show right now.", "All quiet for now");
+              return;
+            }
+
+            projectGrid.replaceChildren(...data.projects.map(createProjectCard));
+            projectGrid.hidden = false;
+            stateContainer.hidden = true;
+          } catch (error) {
+            showState(
+              "error",
+              `${error.message} Check that project-data.json is available and correctly formatted.`,
+              "Project updates couldn’t be loaded"
+            );
+          }
+        }
+
+        loadProjects();
+      })();
+    </script>
+  </body>
+</html>

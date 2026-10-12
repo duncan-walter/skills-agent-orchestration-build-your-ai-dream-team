@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Onboarding",
+      "owner": "Maya Chen",
+      "status": "Active",
+      "recentActivity": "Published the first draft of the setup guide yesterday.",
+      "priority": "High",
+      "summary": "Help first-time contributors get a local environment running and find a welcoming first issue."
+    },
+    {
+      "name": "Search Improvements",
+      "owner": "Jordan Lee",
+      "status": "At Risk",
+      "recentActivity": "Search relevance review is underway; feedback requested by Friday.",
+      "priority": "Medium",
+      "summary": "Make project results easier to find. A second reviewer for the ranking examples would help."
+    },
+    {
+      "name": "Accessibility Pass",
+      "owner": "Sam Rivera",
+      "status": "Blocked",
+      "recentActivity": "Keyboard testing surfaced a focus-order issue awaiting a shared component fix.",
+      "priority": "High",
+      "summary": "Improve keyboard and screen-reader support across the dashboard. Help reproduce the focus issue."
+    },
+    {
+      "name": "Release Notes Refresh",
+      "owner": "Alex Morgan",
+      "status": "Complete",
+      "recentActivity": "The updated release notes template was merged this week.",
+      "priority": "Low",
+      "summary": "Give contributors a consistent, easy-to-scan format for documenting shipped changes."
+    },
+    {
+      "name": "Community Help Center",
+      "owner": "Taylor Brooks",
+      "status": "Active",
+      "recentActivity": "Collected common support questions and grouped them into draft topics.",
+      "priority": "Low",
+      "summary": "Turn frequently asked questions into practical answers. Volunteers can review the topic outline."
+    }
+  ]
+}
